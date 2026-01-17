@@ -3,8 +3,8 @@ import { Probot, Context } from "probot";
 // Extract related issues from PR body
 function extractIssueNumbers(prBody: string): number[] {
   const issueNumbers: number[] = [];
-  // Match patterns like "Fixes #123", "Closes #456", "Resolves #789"
-  const regex = /(?:Fixes|Closes|Resolves)\s+#(\d+)/gi;
+  // Match patterns like "Issue #123" (case insensitive)
+  const regex = /Issue\s+#(\d+)/gi;
   let match;
 
   while ((match = regex.exec(prBody)) !== null) {
