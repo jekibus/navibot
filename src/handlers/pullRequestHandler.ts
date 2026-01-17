@@ -148,8 +148,9 @@ export function setupPullRequestHandler(app: Probot) {
         return;
       }
 
-      // Extract related issue numbers from PR body
-      const issueNumbers = extractIssueNumbers(pullRequest.body || "");
+      // Extract related issue numbers from PR title and body
+      const titleAndBody = `${pullRequest.title} ${pullRequest.body || ""}`;
+      const issueNumbers = extractIssueNumbers(titleAndBody);
       if (issueNumbers.length === 0) {
         console.log(
           `⏭️ No related issues found in PR #${pullRequest.number}`,
