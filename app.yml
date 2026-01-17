@@ -23,7 +23,7 @@ default_events:
   # - fork
   # - gollum
   # - issue_comment
-  - issues
+  - projects_v2_item
 # - label
 # - milestone
 # - member
@@ -71,6 +71,10 @@ default_permissions:
   # Issues and related comments, assignees, labels, and milestones.
   # https://developer.github.com/v3/apps/permissions/#permission-on-issues
   issues: write
+
+  # Manage GitHub Projects V2
+  # https://developer.github.com/v3/apps/permissions/#permission-on-projects
+  projects: read
 
   # Search repositories, list collaborators, and access repository metadata.
   # https://developer.github.com/v3/apps/permissions/#metadata-permissions

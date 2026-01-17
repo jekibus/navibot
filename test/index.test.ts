@@ -6,13 +6,10 @@ import nock from "nock";
 import myProbotApp from "../src/index.js";
 import { Probot, ProbotOctokit } from "probot";
 // Requiring our fixtures
-//import payload from "./fixtures/issues.opened.json" with { "type": "json"};
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { describe, beforeEach, afterEach, test, expect } from "vitest";
-
-const issueCreatedBody = { body: "Thanks for opening this issue!" };
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -21,8 +18,11 @@ const privateKey = fs.readFileSync(
   "utf-8",
 );
 
-const payload = JSON.parse(
-  fs.readFileSync(path.join(__dirname, "fixtures/issues.opened.json"), "utf-8"),
+const projectsV2ItemPayload = JSON.parse(
+  fs.readFileSync(
+    path.join(__dirname, "fixtures/projects-v2-item.edited.json"),
+    "utf-8",
+  ),
 );
 
 describe("My Probot app", () => {
@@ -43,28 +43,24 @@ describe("My Probot app", () => {
     probot.load(myProbotApp);
   });
 
-  test("creates a comment when an issue is opened", async () => {
-    const mock = nock("https://api.github.com")
-      // Test that we correctly return a test token
-      .post("/app/installations/2/access_tokens")
-      .reply(200, {
-        token: "test",
-        permissions: {
-          issues: "write",
-        },
-      })
+  test("logs when projects_v2_item.edited event is received", async () => {
+    const consoleSpy = console.log;
+    const logs: string[] = [];
 
-      // Test that a comment is posted
-      .post("/repos/hiimbex/testing-things/issues/1/comments", (body: any) => {
-        expect(body).toMatchObject(issueCreatedBody);
-        return true;
-      })
-      .reply(200);
+    // Capture console.log calls
+    console.log = (...args: any[]) => {
+      logs.push(args.join(" "));
+    };
 
     // Receive a webhook event
-    await probot.receive({ name: "issues", payload });
+    await probot.receive({ name: "projects_v2_item", payload: projectsV2ItemPayload });
 
-    expect(mock.pendingMocks()).toStrictEqual([]);
+    // Restore console.log
+    console.log = consoleSpy;
+
+    // Verify that logs were created with the webhook content
+    expect(logs.some((log) => log.includes("Received projects_v2_item.edited"))).toBe(true);
+    expect(logs.some((log) => log.includes("Status field detected"))).toBe(true);
   });
 
   afterEach(() => {
