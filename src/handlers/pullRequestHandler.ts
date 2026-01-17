@@ -14,6 +14,14 @@ function extractIssueNumbers(prBody: string): number[] {
   return issueNumbers;
 }
 
+// Extract issue number from branch name (e.g., feat/123, fix/123)
+function extractIssueFromBranch(branchName: string): number | null {
+  // Match patterns like feat/123, fix/123, feature/123, etc.
+  const regex = /(?:feat|fix|feature|bugfix|hotfix)\/(\d+)/i;
+  const match = branchName.match(regex);
+  return match ? parseInt(match[1], 10) : null;
+}
+
 // Get status based on branch
 function getStatusForBranch(baseBranch: string): string | null {
   const branch = baseBranch.toLowerCase();
@@ -151,6 +159,13 @@ export function setupPullRequestHandler(app: Probot) {
       // Extract related issue numbers from PR title and body
       const titleAndBody = `${pullRequest.title} ${pullRequest.body || ""}`;
       const issueNumbers = extractIssueNumbers(titleAndBody);
+
+      // Also try to extract from branch name
+      const branchIssue = extractIssueFromBranch(pullRequest.head.ref);
+      if (branchIssue && !issueNumbers.includes(branchIssue)) {
+        issueNumbers.push(branchIssue);
+      }
+
       if (issueNumbers.length === 0) {
         console.log(
           `⏭️ No related issues found in PR #${pullRequest.number}`,
